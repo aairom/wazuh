@@ -56,8 +56,12 @@ private:
     FIMDB();
     ~FIMDB() = default;
     FIMDB(const FIMDB&) = delete;
+
+    int                           m_max_rows_file;
+    int                           m_max_rows_registry;
     std::unique_ptr<DBSync>       m_dbsyncHandler;
     std::unique_ptr<RemoteSync>   m_rsyncHandler;
+
     std::string createStatement();
     void setFileLimit();
     void setRegistryLimit();

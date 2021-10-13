@@ -31,21 +31,32 @@ std::string createStatement()
 
 void setFileLimit()
 {
-    m_dbsyncHandler->setTableMaxRow("file_entry", syscheck.file_limit);
+    m_dbsyncHandler->setTableMaxRow("file_entry", m_max_rows_file);
 }
 
+#ifdef WIN32
 void setRegistryLimit()
 {
-    m_dbsyncHandler->setTableMaxRow("registry_key", syscheck.value_limit);
+    m_dbsyncHandler->setTableMaxRow("registry_key", m_max_rows_registry);
 }
 
 void setValueLimit()
 {
-    m_dbsyncHandler->setTableMaxRow("registry_data", syscheck.value_limit);
+    m_dbsyncHandler->setTableMaxRow("registry_data", m_max_rows_registry);
 }
+#endif
 
-void FIMDB::init(const std::string& dbPath)
+#ifdef WIN32
+void FIMDB::init(const std::string& dbPath, int max_rows_file, int max_rows_registry)
+#else
+void FIMDB::init(const std::string& dbPath, int max_rows_file)
+#endif
+
 {
+    m_max_rows_file = max_rows_file;
+#ifdef WIN32
+    m_max_rows_registry = max_rows_registry;
+#endif
     m_dbsyncHandler = std::make_unique<DBSync>(HostType::AGENT, DbEngineType::SQLITE3, dbPath, createStatement());
     m_rsyncHandler = std::make_unique<RemoteSync>();
 
@@ -119,76 +130,10 @@ int updateItem(DBItem* item, ResultCallbackData callbackData)
 
 void registerRsync()
 {
-    const auto reportFimWrapper
-    {
-        // [this](const std::string & dataString)
-        // {
-        //     auto jsonData(nlohmann::json::parse(dataString));
-        //     auto it{jsonData.find("data")};
-
-        //     if (!m_stopping)
-        //     {
-        //         if (it != jsonData.end())
-        //         {
-        //             auto& data{*it};
-        //             it = data.find("attributes");
-
-        //             if (it != data.end())
-        //             {
-        //                 auto& fieldData { *it };
-        //                 removeKeysWithEmptyValue(fieldData);
-        //                 fieldData["scan_time"] = Utils::getCurrentTimestamp();
-        //                 const auto msgToSend{jsonData.dump()};
-        //                 m_reportSyncFunction(msgToSend);
-        //                 m_logFunction(LOG_DEBUG_VERBOSE, "Sync sent: " + msgToSend);
-        //             }
-        //             else
-        //             {
-        //                 m_reportSyncFunction(dataString);
-        //                 m_logFunction(LOG_DEBUG_VERBOSE, "Sync sent: " + dataString);
-        //             }
-        //         }
-        //         else
-        //         {
-        //             //LCOV_EXCL_START
-        //             m_reportSyncFunction(dataString);
-        //             m_logFunction(LOG_DEBUG_VERBOSE, "Sync sent: " + dataString);
-        //             //LCOV_EXCL_STOP
-        //         }
-        //     }
-        // }
-    };
-
-    try
-    {
-        m_rsyncHandler->registerSyncID("fim_sync",
-                                       m_spDBSync->handle(),
-                                       nlohmann::json::parse(OS_SYNC_CONFIG_STATEMENT),
-                                       reportSyncWrapper);
-    }
-
 }
 
 void loopRsync()
 {
-//     m_logFunction(LOG_INFO, "Module started.");
-
-//     if (m_scanOnStart)
-//     {
-//         scan();
-//         sync();
-//     }
-
-//     while (!m_cv.wait_for(lock, std::chrono::seconds{m_intervalValue}, [&]()
-// {
-//     return m_stopping;
-// }))
-//     {
-//         scan();
-//         sync();
-//     }
-//     m_spRsync.reset(nullptr);
-//     m_spDBSync.reset(nullptr);
 }
 
 #endif
